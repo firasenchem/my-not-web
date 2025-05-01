@@ -1,0 +1,163 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Note</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto', sans-serif;
+      background: #f0f2f5;
+      color: #333;
+    }
+    .login-screen, .app {
+      max-width: 600px;
+      margin: 50px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    .note-input {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 20px;
+    }
+    textarea, input[type="text"] {
+      padding: 10px;
+      font-size: 1em;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    select {
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 10px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #2980b9;
+    }
+    .note {
+      background: #ecf0f1;
+      padding: 10px;
+      border-left: 5px solid #3498db;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+    .note small {
+      display: block;
+      color: #666;
+      font-size: 0.8em;
+    }
+    .note .category {
+      font-weight: bold;
+      color: #2c3e50;
+    }
+    .delete-btn {
+      float: right;
+      background: transparent;
+      border: none;
+      color: red;
+      font-size: 1em;
+      cursor: pointer;
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="login-screen" id="loginScreen">
+    <h1>My Note</h1>
+    <input type="password" id="passwordInput" placeholder="Masukkan kata laluan" />
+    <button onclick="login()">Masuk</button>
+  </div>  <div class="app hidden" id="appScreen">
+    <h1>My Note</h1>
+    <div class="note-input">
+      <input type="text" id="noteCategory" placeholder="Kategori (contoh: Sekolah, Peribadi)" />
+      <textarea id="noteText" placeholder="Tulis nota awak di sini..."></textarea>
+    </div>
+    <button onclick="addNote()">Simpan Nota</button>
+    <h2>Nota Anda</h2>
+    <div id="notesContainer"></div>
+  </div>  <script>
+    const PASSWORD = "1234"; // Tukar kepada kata laluan rahsia awak
+    let notes = JSON.parse(localStorage.getItem('notes')) || [];
+
+    function login() {
+      const input = document.getElementById('passwordInput').value;
+      if (input === PASSWORD) {
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('appScreen').classList.remove('hidden');
+        displayNotes();
+      } else {
+        alert("Kata laluan salah!");
+      }
+    }
+
+    function displayNotes() {
+      const container = document.getElementById('notesContainer');
+      container.innerHTML = '';
+      notes.forEach((note, index) => {
+        const noteDiv = document.createElement('div');
+        noteDiv.className = 'note';
+        noteDiv.innerHTML = `
+          <button class="delete-btn" onclick="deleteNote(${index})">x</button>
+          <div class="category">${note.category}</div>
+          <div>${note.text}</div>
+          <small>${note.date}</small>
+        `;
+        container.appendChild(noteDiv);
+      });
+    }
+
+    function addNote() {
+      const noteText = document.getElementById('noteText').value.trim();
+      const category = document.getElementById('noteCategory').value.trim() || "Umum";
+      if (noteText !== '') {
+        const newNote = {
+          text: noteText,
+          category: category,
+          date: new Date().toLocaleString()
+        };
+        notes.unshift(newNote);
+        localStorage.setItem('notes', JSON.stringify(notes));
+        document.getElementById('noteText').value = '';
+        document.getElementById('noteCategory').value = '';
+        displayNotes();
+      }
+    }
+
+    function deleteNote(index) {
+      notes.splice(index, 1);
+      localStorage.setItem('notes', JSON.stringify(notes));
+      displayNotes();
+    }
+
+    // Autosave on input
+    document.getElementById('noteText').addEventListener('input', () => {
+      localStorage.setItem('draftNote', document.getElementById('noteText').value);
+    });
+
+    // Load draft on page load
+    window.onload = () => {
+      const draft = localStorage.getItem('draftNote');
+      if (draft) document.getElementById('noteText').value = draft;
+    }
+  </script></body>
+</html>
